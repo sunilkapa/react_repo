@@ -1,0 +1,146 @@
+<script src="react.development.js"></script>
+<script src="react-dom.development.js"></script>
+<script src="babel.js"></script>
+
+
+<div id="root"></div>
+
+
+<script type="text/babel">
+  
+   class SignUp extends React.Component{
+        constructor(){
+            super();
+            this.state={
+                dataObj:{
+                    name:'',
+                    uid:'',
+                    pwd:'',
+                    address:'',
+                    country:'IND',
+                    gender:'M',
+                    hobbies:'cri'
+                },
+                isProcessing:false,
+                 result:''
+            }
+            this.cbArr=['cri'];
+            this.fnOnChange=this.fnOnChange.bind(this)
+        }
+        fnSignup(){
+            this.setState({
+                isProcessing:true
+            })
+            let o=new XMLHttpRequest();
+            o.open('post','http://localhost:2020/std/std-reg');
+            o.setRequestHeader('Content-Type','application/json');
+            o.send(JSON.stringify(this.state.dataObj))
+            o.onload=()=>{
+                let res= o.responseText
+                res=JSON.parse(res);
+                let msg="Not inserted try again";
+                if(res.affectedRows > 0){
+                    msg="Inserted successfully"
+                }
+                this.setState({
+                   isProcessing:false,
+                   result:msg,
+                   dataObj:{
+                    name:'',
+                    uid:'',
+                    pwd:'',
+                    address:'',
+                    country:'IND',
+                    gender:'M',
+                    hobbies:'cri'
+                }
+                })
+            }
+            o.onerror=()=>{
+                let res= o.responseText
+                this.setState({
+                   isProcessing:false,
+                   result:res
+                })
+            }
+
+        }
+        fnOnChange(eve){
+          const {name,value,type,checked} =eve.target
+          debugger;
+           if(type=='checkbox'){
+                if(checked){
+                   this.cbArr.push(name) 
+                }else{
+                  this.cbArr.splice(this.cbArr.indexOf(name),1)
+                }
+                this.setState({
+                dataObj:{
+                    ...this.state.dataObj,
+                    'hobbies':this.cbArr.join()
+                }
+            })
+           }else{
+            this.setState({
+                dataObj:{
+                    ...this.state.dataObj,
+                    [name]:value
+                }
+            })
+           }
+        }
+        render(){
+            const {name,uid,pwd,address,gender,hobbies,country} =this.state.dataObj;
+            const {isProcessing,result} =this.state;
+            const isCric=hobbies.includes('cri');
+            const isFB=hobbies.includes('fb');
+            const isChe=hobbies.includes('che');
+
+            return <div>
+                <h1>Sign up</h1>
+                <p>
+                    <b>Name:</b><input name="name" value={name} onChange={this.fnOnChange} />
+                </p>
+                <p>
+                    <b>Uid:</b><input name="uid" value={uid} onChange={this.fnOnChange} />
+                </p>
+                <p>
+                    <b>password:</b><input name="pwd" value={pwd} onChange={this.fnOnChange} type="password" />
+                </p>
+                <p>
+                    <b>Gender:</b><input checked={gender=='M'} type="radio" value='M' name="gender" onChange={this.fnOnChange} /> Male
+                    <input type='radio' checked={gender=='F'} name="gender" value="F" onChange={this.fnOnChange} /> Female
+                </p>
+                <p>
+                    <b>Hobbies:</b> <input checked={isCric} type='checkbox' name="cri" onChange={this.fnOnChange} /> Cricket
+                    <input type='checkbox' name="fb" checked={isFB}  onChange={this.fnOnChange} /> FootBall
+                    <input type='checkbox' checked={isChe} name="che"  onChange={this.fnOnChange}  /> Chess
+                </p>
+                <p>
+                    <b>Country:</b>
+                    <select name="country" onChange={this.fnOnChange} >
+                        <option selected={country=='IND'} value="IND">India</option>
+                        <option selected={country=='USA'} value="USA">US</option>
+                        <option selected={country=='CHI'} value="CHI">China</option>
+
+                    </select>
+                </p>
+                <p>
+                    <b>Address:</b><textarea value={address} onChange={this.fnOnChange} name="address"></textarea>
+                </p>
+
+                <p>
+                    <button disabled={isProcessing} onClick={this.fnSignup.bind(this)}>Signup</button>
+                    {isProcessing && <span>processing...</span>}
+                    <h2>{result}</h2>
+                </p>
+                
+                </div>
+        }
+   }
+
+
+   ReactDOM.render(<SignUp />, document.getElementById('root'));
+
+ 
+</script>
